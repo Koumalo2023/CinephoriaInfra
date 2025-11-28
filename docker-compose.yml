@@ -1,0 +1,152 @@
+services:
+  # HashiCorp Vault pour la gestion des secrets
+  vault:
+    image: hashicorp/vault:1.15
+    container_name: cinephoria-vault
+    environment:
+      VAULT_DEV_ROOT_TOKEN_ID: "cinephoria-vault-root-token"
+      VAULT_DEV_LISTEN_ADDRESS: "0.0.0.0:8200"
+      VAULT_ADDR: "http://0.0.0.0:8200"
+    ports:
+      - "8200:8200"
+    volumes:
+      - vault_data:/vault/data
+      - ./CinephoriaBackEnd/Infrastructure/vault/config.hcl:/vault/config/config.hcl
+      - ./CinephoriaBackEnd/Infrastructure/scripts/init-vault.sh:/scripts/init-vault.sh
+    networks:
+      - cinephoria-network
+    cap_add:
+      - IPC_LOCK
+    entrypoint: >
+      sh -c "
+        vault server -config=/vault/config/config.hcl &
+        sleep 5 &&
+        /scripts/init-vault.sh
+      "
+    healthcheck:
+      test: ["CMD", "vault", "status"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  # Base de données PostgreSQL
+  postgres:
+    image: postgres:15-alpine
+    container_name: cinephoria-postgres
+    environment:
+      POSTGRES_DB: CinephoriaDB
+      POSTGRES_USER: cinephoria_user
+      POSTGRES_PASSWORD: cinephoria_password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./CinephoriaBackEnd/CinephoriaServer.API/Data/Scripts/init-db.sql:/docker-entrypoint-initdb.d/init-db.sql
+    networks:
+      - cinephoria-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U cinephoria_user -d CinephoriaDB"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # Base de données MongoDB
+  mongodb:
+    image: mongo:4.4
+    container_name: cinephoria-mongodb
+    environment:
+      MONGO_INITDB_DATABASE: CinephoriaDashboardDB
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb_data:/data/db
+    networks:
+      - cinephoria-network
+    healthcheck:
+      test: ["CMD", "mongo", "--eval", "db.adminCommand('ping')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # Backend API ASP.NET Core
+  backend:
+    build:
+      context: ./CinephoriaBackEnd/CinephoriaServer.API
+      dockerfile: Dockerfile
+    container_name: cinephoria-backend
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ConnectionStrings__PostgreSQL=Host=postgres;Port=5432;Database=CinephoriaDB;Username=cinephoria_user;Password=cinephoria_password
+      - MongoDbSettings__ConnectionString=mongodb://mongodb:27017
+      - MongoDbSettings__DatabaseName=CinephoriaDashboardDB
+      - JWT__Secret=YourSuperSecretKeyForJWTTokenGenerationInDevelopment
+      - JWT__ValidIssuer=http://localhost:5000
+      - JWT__ValidAudience=http://localhost:5000
+      - ASPNETCORE_URLS=http://+:80
+    ports:
+      - "5000:80"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      mongodb:
+        condition: service_healthy
+    networks:
+      - cinephoria-network
+    volumes:
+      - ./CinephoriaBackEnd/CinephoriaServer.API/logs:/app/logs
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:80/health/live"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+  # Frontend Angular
+  frontend:
+    build:
+      context: ./Cinephoria-web
+      dockerfile: Dockerfile
+    container_name: cinephoria-frontend
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+    networks:
+      - cinephoria-network
+    environment:
+      - API_URL=http://localhost:5000/api
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:80/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # PGAdmin pour la gestion de PostgreSQL (optionnel)
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: cinephoria-pgadmin
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@cinephoria.com
+      PGADMIN_DEFAULT_PASSWORD: admin123
+    ports:
+      - "5050:80"
+    depends_on:
+      - postgres
+    networks:
+      - cinephoria-network
+
+volumes:
+  postgres_data:
+    driver: local
+  mongodb_data:
+    driver: local
+  vault_data:
+    driver: local
+
+networks:
+  cinephoria-network:
+    driver: bridge
