@@ -1,0 +1,31 @@
+# AWS Configuration
+region = "eu-west-3"
+
+# Domain Configuration
+domain_name = "cinephoria.eu"
+
+# EC2 Configuration
+ec2_instance_type = "t3.micro"
+ec2_key_name      = "your-ssh-key-name"
+
+# Database Configuration
+postgres_password = "your-secure-postgres-password"
+
+# CloudWatch Configuration
+cloudwatch_alarm_actions = ["arn:aws:sns:eu-west-3:123456789012:alerts"]
+
+# Tags
+tags = {
+  Environment = "production"
+  Project     = "Cinephoria"
+  Owner       = "YourTeam"
+}
+
+# Terraform Backend Configuration (uncomment and configure)
+# terraform {
+#   backend "s3" {
+#     bucket = "your-terraform-state-bucket"
+#     key    = "cinephoria/infrastructure.tfstate"
+#     region = "eu-west-3"
+#   }
+# }
