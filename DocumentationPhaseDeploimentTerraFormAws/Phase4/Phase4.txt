@@ -1,0 +1,131 @@
+✅Phase 4 : Monitoring, Qualité, Sécurité, Backups, Optimisation
+
+Objectifs : Obtenir la configuration complète pour observabilité, logs, metrics, backups, SLO, sécurité et optimisation coûts.
+
+Je veux mettre en place l’observabilité, le monitoring, la qualité, la sécurité et l’optimisation coûts pour Cinephoria (low-cost avec AWS Free Tier).
+
+👉 Dans tous les scripts, dashboards et configurations, considère que :
+
+l’API production écoute sur 5000
+
+l’API staging écoute sur 5001
+👉 Les logs doivent être séparés par environnement, par exemple :
+
+/cinephoria/api-prod
+
+/cinephoria/api-staging
+
+👉 Les métriques CloudWatch doivent également distinguer les deux environnements.
+
+
+Génère TOUS les éléments suivants :
+
+🔎 1) Logging (cloudwatch + Angular + backend)
+
+docker logging → awslogs
+
+structure JSON logs
+
+correlation IDs middleware ASP.NET
+
+CloudFront access logs (optionnel)
+
+📊 2) Metrics & Dashboard CloudWatch
+
+Donne-moi :
+
+Liste des métriques essentielles
+
+Dashboard JSON (API, EC2, CloudFront, S3)
+
+Terraform pour dashboard
+
+🚨 3) Alerting (low-cost)
+
+Alertes CloudWatch :
+
+5xx API > 1 %
+
+Latence p95 > 1s
+
+CPU EC2 > 80%
+
+Disk < 20%
+
+Backup fail
+
+Avec :
+
+SNS
+
+Notification email + webhook Slack
+
+💾 4) Backups & Recovery
+
+PostgreSQL :
+
+script pg_dump vers S3
+
+lifecycle rules
+
+cronjob
+
+script restore
+
+MongoDB :
+
+conseils Atlas Free Tier
+
+export JSON possible
+
+S3 :
+
+versioning + expiration
+
+🔐 5) Sécurité & Qualité
+
+SonarCloud config
+
+Trivy container scanning
+
+Dependabot
+
+GitHub Code Scanning
+
+IAM least-privilege
+
+limite SG ports
+
+WAF option low-cost
+
+🧪 6) Tests automatisés (CI)
+
+Workflows :
+
+nightly performance test (Artillery)
+
+backup verification job
+
+dependency scanning job
+
+📘 7) Runbooks & SLO
+
+Donne-moi :
+
+SLIs / SLOs recommandés
+
+runbook P1 / P2 (Markdown)
+
+incident template
+
+🧾 SORTIE ATTENDUE
+
+scripts
+
+JSON
+
+Terraform
+
+templates Markdown
+
+recommandations coût/performance

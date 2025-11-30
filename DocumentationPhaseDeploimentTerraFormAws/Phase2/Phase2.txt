@@ -1,0 +1,159 @@
+✅ Phase 2 : Infrastructure AWS Low-Cost via Terraform
+
+Objectifs : Générer l’infrastructure complète AWS Cinephoria (EC2, S3, CloudFront, Route53, ACM), compatible Free Tier.
+
+
+Je veux construire toute l’infrastructure AWS low-cost de Cinephoria (backend + frontend) via Terraform, en utilisant ces domaines :
+
+www.cinephoria.eu  → CloudFront (prod)
+
+staging.cinephoria.eu → CloudFront (staging)
+
+api.cinephoria.eu → EC2
+
+staging-api.cinephoria.eu → EC2 (même instance ou ports séparés)
+
+
+👉 Une seule instance EC2 héberge deux environnements backend distincts :
+
+Production → Docker + Nginx → port 5000
+
+Staging → Docker + Nginx → port 5001
+👉 Route53 dirige :
+
+api.cinephoria.eu → port 5000 via Nginx
+
+staging-api.cinephoria.eu → port 5001 via Nginx
+
+
+
+Architecture low-cost :
+
+1x EC2 t2.micro/t3.micro (backend + PostgreSQL via Docker)
+
+S3 (2 buckets)
+
+CloudFront (2 distributions)
+
+Route53 (Hosted Zone)
+
+ACM (Wildcard + root)
+
+CloudWatch basique
+
+MongoDB Atlas Free Tier (variable)
+
+Génère TOUS les éléments suivants :
+
+🌐 1. Route53 (DNS)
+
+Hosted zone : cinephoria.eu
+
+Records :
+
+www.cinephoria.eu
+ → CloudFront prod
+
+staging.cinephoria.eu → CloudFront staging
+
+api.cinephoria.eu → EC2 Elastic IP
+
+staging-api.cinephoria.eu → EC2 Elastic IP
+
+TTL optimisé (300s)
+
+🔐 2. Certificats ACM
+
+Certificat wildcard : *.cinephoria.eu
+
+Certificat root : cinephoria.eu
+
+Validation DNS automatique via Terraform
+
+Attachés à :
+
+CloudFront (frontend)
+
+Nginx backend (via EC2)
+
+🪣 3. S3 (Frontend)
+
+Deux buckets :
+
+cinephoria-frontend-prod
+
+cinephoria-frontend-staging
+
+Avec :
+
+versioning = true
+
+block public access = true
+
+uniquement via CloudFront
+
+🌍 4. CloudFront
+
+Deux distributions :
+
+www.cinephoria.eu
+
+staging.cinephoria.eu
+
+Inclure :
+
+ACM SSL
+
+Brotli/gzip
+
+Cache-control
+
+Logging optionnel
+
+🖥 5. EC2 Backend (Free Tier)
+
+Instance :
+
+t2.micro ou t3.micro
+
+Amazon Linux 2023 ou Ubuntu 22.04
+
+Docker + Docker Compose installés via user-data
+
+Elastic IP
+
+Security groups minimalistes
+
+🗂 6. PostgreSQL Docker (pas de RDS)
+
+variable POSTGRES_PASSWORD
+
+volume EBS persistant
+
+📊 7. CloudWatch (Low-cost)
+
+Logs EC2
+
+Metrics
+
+Alarmes :
+
+CPU > 80%
+
+Errors 5xx API
+
+Dashboard minimal
+
+🏗 SORTIE ATTENDUE
+
+Je veux :
+
+Modules Terraform par composant (ec2, cloudfront, s3, route53, acm, cloudwatch)
+
+Un main.tf qui assemble tout
+
+variables.tf complet
+
+outputs.tf
+
+Documentation (README)

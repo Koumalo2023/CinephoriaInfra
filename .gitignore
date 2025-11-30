@@ -1,0 +1,46 @@
+# Terraform
+**/.terraform/*
+*.tfstate
+*.tfstate.*
+*.tfvars
+.terraform.lock.hcl
+
+# Environment variables
+.env
+.env.local
+.env.production
+.env.staging
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+logs/
+
+# Build outputs
+dist/
+build/
+node_modules/
+
+# Certificates (ne pas commettre les certificats réels)
+certificates/*.pfx
+!certificates/dev-cert.pfx  # Sauf le certificat de développement
+
+# Fichiers sensibles
+secrets/
+*.key
+*.pem
+
+# Docker
+.docker/
+
+# Documentation de déploiement (ne pas pousser sur GitHub)
+DocumentationPhaseDeploimentTerraFormAws/

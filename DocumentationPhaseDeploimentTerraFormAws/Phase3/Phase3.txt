@@ -1,0 +1,128 @@
+✅Phase 3 : CI/CD GitHub Actions (Backend + Frontend)
+
+Objectifs : Obtenir les workflows GitHub Actions complets avec AWS OIDC, déploiement EC2+S3+CloudFront.
+
+
+Je veux créer des pipelines CI/CD complets pour Cinephoria :
+
+Backend ASP.NET 8 → EC2 Docker Compose
+
+Frontend Angular 19 → S3 + CloudFront
+
+
+👉 Le workflow CI/CD doit déployer deux stacks Docker différentes sur la même EC2 :
+
+Staging : déploiement du service Docker exposé sur port 5001
+
+Production : déploiement du service Docker exposé sur port 5000
+
+👉 Les deux docker-compose seront nommés :
+
+docker-compose.prod.yml
+
+docker-compose.staging.yml
+
+👉 Le reverse proxy Nginx déjà installé dirige les bons sous-domaines vers les bons ports.
+
+
+
+
+Outils :
+
+GitHub Actions + OIDC (pas de keys)
+
+Docker
+
+Nginx
+
+AWS CLI
+
+Branches :
+
+feature/* → tests
+
+develop → déploiement staging
+
+main → déploiement production
+
+tags v* → déploiement production
+
+Génère TOUS les éléments suivants :
+
+🟦 Workflow BACKEND (backend-deploy.yml)
+
+Étapes :
+
+→ Tests
+
+restore
+
+build
+
+test
+
+SAST .NET analyzers
+
+→ Build Docker
+
+image tag (staging/prod)
+
+→ Déploiement EC2
+
+connexion via SSH ou SSM
+
+copie docker-compose
+
+docker compose pull/up
+
+health check sur /health/ready
+
+rollback si échec
+
+🟧 Workflow FRONTEND (frontend-deploy.yml)
+
+Étapes :
+
+→ Tests
+
+npm ci
+
+npm run test
+
+audit sécurité JS
+
+→ Build Angular
+
+staging : npm run build:staging
+
+prod : npm run build:prod
+
+→ Déploiement S3 + CloudFront
+
+sync dist/ → bucket
+
+invalidation CloudFront
+
+🔐 Gestion des secrets via GitHub Environments
+
+AWS_ROLE_ARN (staging/prod)
+
+JWT_SECRET
+
+MONGODB_URI
+
+POSTGRES_PASSWORD
+
+API_URL
+
+📄 SORTIE ATTENDUE
+
+backend-deploy.yml complet
+
+frontend-deploy.yml complet
+
+workflows réutilisables (common-reusable.yml)
+
+scripts bash utilisés par les workflows
+
+documentation "Comment déployer Cinephoria en 1 clic"

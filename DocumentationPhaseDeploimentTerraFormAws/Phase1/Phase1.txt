@@ -1,0 +1,128 @@
+✅ Phase 1 : Configuration Application & Containerisation (Optimisé)
+
+Objectifs : Obtenir une préparation complète du backend ASP.NET + frontend Angular, adaptée aux domaines Cinephoria et au déploiement AWS low-cost.
+
+
+Je veux préparer mon application Cinephoria (ASP.NET 8 + Angular 19) pour trois environnements : local, staging et production, avec les domaines suivants :
+
+Production :
+
+https://www.cinephoria.eu
+ (frontend)
+
+https://api.cinephoria.eu
+ (backend)
+
+Staging :
+
+https://staging.cinephoria.eu
+ (frontend)
+
+https://staging-api.cinephoria.eu
+ (backend)
+
+Base de données :
+
+PostgreSQL via Docker sur EC2
+
+MongoDB Atlas Free Tier
+
+
+👉 Le staging et la production tourneront sur la même instance EC2, mais via deux services Docker distincts :
+
+Production → API sur le port 5000
+
+Staging → API sur le port 5001
+👉 Nginx jouera le rôle de reverse proxy et dirigera chaque sous-domaine vers le bon port.
+
+Je veux que tu me génères TOUS les éléments suivants :
+
+🎥 BACKEND ASP.NET 8
+
+Fichiers appsettings.*.json complets pour :
+
+Development → http://localhost:5000
+
+Staging → https://staging-api.cinephoria.eu
+
+Production → https://api.cinephoria.eu
+
+Avec :
+
+Connexion PostgreSQL Docker
+
+Connexion MongoDB Atlas (variable)
+
+Logging structuré + correlation IDs
+
+Configuration Kestrel HTTPS + reverse proxy Nginx
+
+Configuration CORS dynamique :
+
+http://localhost:4200
+
+https://staging.cinephoria.eu
+
+https://www.cinephoria.eu
+
+Health checks :
+
+PostgreSQL
+
+MongoDB
+
+/health/live et /health/ready
+
+Dockerfile ASP.NET optimisé :
+
+multi-stage
+
+non-root
+
+image légère
+
+variables d’environnement (domaines)
+
+healthchecks Docker
+
+🎨 FRONTEND ANGULAR 19
+
+Fichiers environments :
+
+environment.ts (local API)
+
+environment.staging.ts
+
+environment.prod.ts
+
+Inclure :
+
+SEO pour www.cinephoria.eu
+
+titres et méta dynamiques
+
+Dockerfile Angular :
+
+build Angular
+
+Nginx statique optimisé (gzip/brotli, cache headers)
+
+compatible S3 + CloudFront
+
+🐳 DOCKER-COMPOSE (LOCAL)
+
+backend + PostgreSQL local
+
+option SSL local via mkcert
+
+simulation environment variables
+
+📄 SORTIE ATTENDUE
+
+Donne-moi :
+
+Code complet (JSON, C#, Dockerfiles, docker-compose.yml)
+
+Instructions claires étape par étape
+
+Explications des choix low-cost
