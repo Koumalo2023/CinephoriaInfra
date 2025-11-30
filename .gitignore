@@ -41,3 +41,6 @@ secrets/
 
 # Docker
 .docker/
+
+# Documentation de déploiement (ne pas pousser sur GitHub)
+DocumentationPhaseDeploimentTerraFormAws/
