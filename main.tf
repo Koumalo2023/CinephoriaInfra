@@ -102,3 +102,14 @@ module "cloudwatch" {
   region               = var.region
   tags                 = var.tags
 }
+
+# Module: IAM OIDC pour GitHub Actions
+module "iam_oidc" {
+  source = "./modules/iam-oidc"
+
+  aws_region          = var.region
+  github_owner        = var.github_owner
+  ec2_instance_id     = module.ec2.instance_id
+  s3_bucket_staging   = module.s3.staging_bucket_name
+  s3_bucket_production = module.s3.prod_bucket_name
+}

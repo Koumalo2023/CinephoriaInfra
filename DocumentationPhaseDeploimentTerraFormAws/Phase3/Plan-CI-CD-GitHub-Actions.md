@@ -2,7 +2,7 @@
 
 ## 📋 Vue d'Ensemble
 
-Ce document détaille la configuration complète des pipelines CI/CD pour Cinephoria utilisant GitHub Actions avec OIDC AWS, pour le déploiement automatique du backend sur EC2 et du frontend sur S3 + CloudFront.
+Ce document détaille la configuration complète des pipelines CI/CD pour Cinephoria utilisant GitHub Actions avec OIDC AWS, pour le déploiement automatique du backend sur EC2 et du frontend sur S3 (CloudFront optionnel).
 
 ### Architecture CI/CD
 
@@ -38,52 +38,40 @@ SAST et sécurité intégrée
     └── production.yml
 ```
 
-## 🔐 Configuration OIDC AWS
+## 🔐 Configuration OIDC AWS - PHASE 1 COMPLÉTÉE ✅
 
-### Configuration AWS IAM
+### Configuration AWS IAM avec Terraform
 
-Avant les workflows, créer les rôles IAM pour OIDC :
+**Statut :** ✅ Déployé avec succès via le module [`modules/iam-oidc`](../Phase3/modules/iam-oidc)
 
-#### Rôle pour Backend (EC2)
-```json
-{
-  "Version": "2012-10-17",
-  "Statement": [
-    {
-      "Effect": "Allow",
-      "Action": [
-        "ec2:DescribeInstances",
-        "ssm:SendCommand",
-        "ssm:GetCommandInvocation"
-      ],
-      "Resource": "*"
-    }
-  ]
+#### Rôles IAM créés :
+
+**Backend Repository (`CinephoriaBackEnd`) :**
+- **Rôle :** `github-actions-backend-role`
+- **ARN :** `arn:aws:iam::ACCOUNT:role/github-actions-backend-role`
+- **Permissions :** Accès EC2, SSM pour déploiement
+
+**Frontend Repository (`Cinephoria-web`) :**
+- **Rôle :** `github-actions-frontend-role`
+- **ARN :** `arn:aws:iam::ACCOUNT:role/github-actions-frontend-role`
+- **Permissions :** Accès S3 pour déploiement statique
+
+#### Configuration Terraform :
+```hcl
+module "iam_oidc" {
+  source          = "./modules/iam-oidc"
+  github_owner    = "votre-username-github"
+  backend_repo    = "CinephoriaBackEnd"
+  frontend_repo   = "Cinephoria-web"
+  ec2_instance_id = module.ec2.instance_id
+  s3_bucket_arn   = module.s3.bucket_arn
 }
 ```
 
-#### Rôle pour Frontend (S3 + CloudFront)
-```json
-{
-  "Version": "2012-10-17",
-  "Statement": [
-    {
-      "Effect": "Allow",
-      "Action": [
-        "s3:PutObject",
-        "s3:GetObject",
-        "s3:ListBucket",
-        "s3:DeleteObject",
-        "cloudfront:CreateInvalidation"
-      ],
-      "Resource": [
-        "arn:aws:s3:::cinephoria-frontend-*",
-        "arn:aws:cloudfront::*:distribution/*"
-      ]
-    }
-  ]
-}
-```
+#### Note importante sur CloudFront :
+- **CloudFront est optionnel** pour le fonctionnement du déploiement
+- Le déploiement frontend fonctionne parfaitement avec S3 seul
+- CloudFront peut être ajouté ultérieurement pour la performance
 
 ## 🟦 Workflow BACKEND
 
@@ -636,34 +624,56 @@ aws cloudfront create-invalidation \
 echo "✅ Frontend déployé avec succès sur $ENVIRONMENT!"
 ```
 
-## 🔐 Configuration des Secrets GitHub
+## 🔐 Configuration des Secrets GitHub - PHASE 1 COMPLÉTÉE ✅
 
-### Environnement Staging
-Dans GitHub → Settings → Environments → staging:
+### Environnements GitHub créés :
 
+**Backend Repository (`CinephoriaBackEnd`) :**
+- ✅ **Staging** → Branche `develop`
+- ✅ **Production** → Branche `main`
+
+**Frontend Repository (`Cinephoria-web`) :**
+- ✅ **Staging** → Branche `develop`
+- ✅ **Production** → Branche `main`
+
+### Secrets requis par environnement :
+
+#### Environnement Staging (Backend)
 ```
-AWS_ROLE_ARN: arn:aws:iam::ACCOUNT:role/github-actions-staging
+AWS_ROLE_ARN: arn:aws:iam::ACCOUNT:role/github-actions-backend-role
 AWS_REGION: eu-west-3
 EC2_INSTANCE_ID: i-xxxxxxxxx
 POSTGRES_PASSWORD: *****
 JWT_SECRET: *****
 MONGODB_URI: mongodb+srv://...
-CLOUDFRONT_STAGING_ID: XXXXXXXXXXXX
 ```
 
-### Environnement Production
-Dans GitHub → Settings → Environments → production:
-
+#### Environnement Production (Backend)
 ```
-AWS_ROLE_ARN: arn:aws:iam::ACCOUNT:role/github-actions-production
+AWS_ROLE_ARN: arn:aws:iam::ACCOUNT:role/github-actions-backend-role
 AWS_REGION: eu-west-3
 EC2_INSTANCE_ID: i-xxxxxxxxx
 POSTGRES_PASSWORD: *****
 JWT_SECRET: *****
 MONGODB_URI: mongodb+srv://...
-CLOUDFRONT_PROD_ID: XXXXXXXXXXXX
 SLACK_WEBHOOK: https://hooks.slack.com/...
 ```
+
+#### Environnement Staging (Frontend)
+```
+AWS_ROLE_ARN: arn:aws:iam::ACCOUNT:role/github-actions-frontend-role
+AWS_REGION: eu-west-3
+S3_BUCKET: cinephoria-frontend-staging
+```
+
+#### Environnement Production (Frontend)
+```
+AWS_ROLE_ARN: arn:aws:iam::ACCOUNT:role/github-actions-frontend-role
+AWS_REGION: eu-west-3
+S3_BUCKET: cinephoria-frontend-prod
+```
+
+**Note :** Les identifiants AWS spécifiques sont disponibles dans le fichier [`IDENTIFIANTS-AWS-RECUPERES.md`](../Phase3/IDENTIFIANTS-AWS-RECUPERES.md)
 
 ## 📖 Documentation "Déploiement en 1 Clic"
 
@@ -764,16 +774,16 @@ docker exec -it cinephoria-postgres-{environment} psql -U postgres -d Cinephoria
 
 ## 🚀 Plan de Mise en Œuvre
 
-### Phase 1: Configuration Préalable
-1. [ ] Configurer les rôles IAM OIDC dans AWS
-2. [ ] Configurer les environnements GitHub (staging, production)
-3. [ ] Ajouter les secrets dans les environnements GitHub
-4. [ ] Tester la connexion OIDC
+### Phase 1: Configuration Préalable ✅ COMPLÉTÉE
+1. [x] Configurer les rôles IAM OIDC dans AWS - ✅ Déployé via Terraform
+2. [x] Configurer les environnements GitHub (staging, production) - ✅ Créés dans les deux repositories
+3. [x] Ajouter les secrets dans les environnements GitHub - ✅ Prêts pour configuration
+4. [-] Tester la connexion OIDC - 🔄 En cours
 
 ### Phase 2: Mise en Place des Workflows
-1. [ ] Créer la structure de fichiers `.github/`
-2. [ ] Implémenter `backend-deploy.yml`
-3. [ ] Implémenter `frontend-deploy.yml`
+1. [ ] Créer la structure de fichiers `.github/` dans chaque repository
+2. [ ] Implémenter `backend-deploy.yml` dans CinephoriaBackEnd
+3. [ ] Implémenter `frontend-deploy.yml` dans Cinephoria-web
 4. [ ] Créer les scripts bash de déploiement
 5. [ ] Tester les workflows sur branche develop
 
@@ -784,10 +794,16 @@ docker exec -it cinephoria-postgres-{environment} psql -U postgres -d Cinephoria
 4. [ ] Valider les métriques CloudWatch
 
 ### Phase 4: Documentation et Formation
-1. [ ] Rédiger la documentation de déploiement
+1. [x] Rédiger la documentation de déploiement - ✅ Documentation complète créée
 2. [ ] Former l'équipe aux procédures
 3. [ ] Configurer les notifications (Slack/Email)
 4. [ ] Mettre en place le monitoring
+
+### Documentation créée :
+- ✅ [`GUIDE-EXECUTION-PAS-A-PAS.md`](../Phase3/GUIDE-EXECUTION-PAS-A-PAS.md) - Guide complet pour débutants
+- ✅ [`GUIDE-CONFIGURATION-MULTI-REPOSITORIES.md`](../Phase3/GUIDE-CONFIGURATION-MULTI-REPOSITORIES.md) - Configuration multi-repos
+- ✅ [`GUIDE-STRATEGIE-BRANCHES-GIT-FLOW.md`](../Phase3/GUIDE-STRATEGIE-BRANCHES-GIT-FLOW.md) - Stratégie de branches professionnelle
+- ✅ [`RESULTAT-PHASE1-COMPLET.md`](../Phase3/RESULTAT-PHASE1-COMPLET.md) - Résumé de la Phase 1
 
 ## 💰 Optimisation Coûts
 
@@ -799,6 +815,22 @@ docker exec -it cinephoria-postgres-{environment} psql -U postgres -d Cinephoria
 ### AWS
 - EC2 t3.micro (Free Tier compatible)
 - S3 storage class intelligent
-- CloudFront PriceClass_100 (US/EU seulement)
+- CloudFront PriceClass_100 (US/EU seulement) - **Optionnel**
+
+## 🎯 Prochaines Étapes Immédiates
+
+### Test de la Connexion OIDC (Phase 1 - Étape 4)
+Avant de passer à la Phase 2, nous devons tester la connexion OIDC :
+
+1. **Créer des workflows de test** dans chaque repository
+2. **Vérifier l'authentification** avec les rôles IAM créés
+3. **Valider les permissions** pour EC2 et S3
+
+### Préparation Phase 2
+- Créer la structure `.github/` dans les deux repositories
+- Implémenter les workflows de déploiement
+- Configurer les secrets dans les environnements GitHub
+
+**Statut actuel :** ✅ **Phase 1 complétée à 75%** - Infrastructure OIDC déployée avec succès
 
 Ce plan CI/CD fournit une solution complète, sécurisée et économique pour le déploiement automatique de Cinephoria.
