@@ -27,7 +27,7 @@ resource "aws_iam_role" "github_actions_backend" {
       {
         Effect = "Allow"
         Principal = {
-          Federated = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:oidc-provider/token.actions.githubusercontent.com"
+          Federated = aws_iam_openid_connect_provider.github_actions.arn
         }
         Action = "sts:AssumeRoleWithWebIdentity"
         Condition = {
@@ -51,6 +51,9 @@ resource "aws_iam_role" "github_actions_backend" {
     ManagedBy   = "Terraform"
     Repository  = "CinephoriaBackEnd"
   }
+
+  # Dépendance explicite sur le fournisseur OIDC
+  depends_on = [aws_iam_openid_connect_provider.github_actions]
 }
 
 # Rôle IAM pour le frontend (Cinephoria-web)
@@ -64,7 +67,7 @@ resource "aws_iam_role" "github_actions_frontend" {
       {
         Effect = "Allow"
         Principal = {
-          Federated = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:oidc-provider/token.actions.githubusercontent.com"
+          Federated = aws_iam_openid_connect_provider.github_actions.arn
         }
         Action = "sts:AssumeRoleWithWebIdentity"
         Condition = {
@@ -88,6 +91,9 @@ resource "aws_iam_role" "github_actions_frontend" {
     ManagedBy   = "Terraform"
     Repository  = "Cinephoria-web"
   }
+
+  # Dépendance explicite sur le fournisseur OIDC
+  depends_on = [aws_iam_openid_connect_provider.github_actions]
 }
 
 # Politique pour le backend - Permissions EC2

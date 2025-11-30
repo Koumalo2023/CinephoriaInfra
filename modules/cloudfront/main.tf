@@ -7,7 +7,7 @@ resource "aws_cloudfront_distribution" "prod" {
   default_root_object = "index.html"
 
   origin {
-    domain_name = var.s3_prod_domain_name
+    domain_name = "${var.s3_prod_domain_name}.s3.${data.aws_region.current.name}.amazonaws.com"
     origin_id   = "S3ProdOrigin"
 
     s3_origin_config {
@@ -71,7 +71,7 @@ resource "aws_cloudfront_distribution" "staging" {
   default_root_object = "index.html"
 
   origin {
-    domain_name = var.s3_staging_domain_name
+    domain_name = "${var.s3_staging_domain_name}.s3.${data.aws_region.current.name}.amazonaws.com"
     origin_id   = "S3StagingOrigin"
 
     s3_origin_config {
@@ -125,6 +125,9 @@ resource "aws_cloudfront_distribution" "staging" {
 
   tags = var.tags
 }
+
+# Data source pour récupérer la région actuelle
+data "aws_region" "current" {}
 
 # Origin Access Identities
 resource "aws_cloudfront_origin_access_identity" "prod" {
