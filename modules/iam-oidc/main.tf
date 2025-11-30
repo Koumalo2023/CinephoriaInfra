@@ -172,5 +172,25 @@ resource "aws_iam_role_policy_attachment" "frontend_s3_attachment" {
   policy_arn = aws_iam_policy.frontend_s3_policy.arn
 }
 
+# Fournisseur OIDC pour GitHub Actions
+resource "aws_iam_openid_connect_provider" "github_actions" {
+  url = "https://token.actions.githubusercontent.com"
+
+  client_id_list = [
+    "sts.amazonaws.com"
+  ]
+
+  thumbprint_list = [
+    "6938fd4d98bab03faadb97b34396831e3780aea1"  # Thumbprint GitHub Actions
+  ]
+
+  tags = {
+    Project     = "Cinephoria"
+    Environment = "all"
+    ManagedBy   = "Terraform"
+    Purpose     = "GitHub Actions OIDC"
+  }
+}
+
 # Données pour récupérer l'account ID actuel
 data "aws_caller_identity" "current" {}
