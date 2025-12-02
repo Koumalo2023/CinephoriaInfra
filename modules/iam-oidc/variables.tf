@@ -25,3 +25,13 @@ variable "s3_bucket_production" {
   description = "Nom du bucket S3 pour l'environnement production"
   type        = string
 }
+
+variable "cloudfront_distribution_staging" {
+  description = "ID de la distribution CloudFront pour l'environnement staging"
+  type        = string
+}
+
+variable "cloudfront_distribution_production" {
+  description = "ID de la distribution CloudFront pour l'environnement production"
+  type        = string
+}

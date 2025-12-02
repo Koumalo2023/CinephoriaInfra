@@ -51,6 +51,7 @@ resource "aws_s3_bucket_policy" "staging" {
 }
 
 data "aws_iam_policy_document" "s3_prod" {
+  # Allow CloudFront service with source ARN restriction
   statement {
     principals {
       type        = "Service"
@@ -68,9 +69,24 @@ data "aws_iam_policy_document" "s3_prod" {
       values   = [var.cloudfront_prod_arn]
     }
   }
+
+  # Allow CloudFront Origin Access Identity
+  statement {
+    principals {
+      type        = "AWS"
+      identifiers = [var.cloudfront_prod_oai_arn]
+    }
+    actions = [
+      "s3:GetObject"
+    ]
+    resources = [
+      "${aws_s3_bucket.frontend_prod.arn}/*"
+    ]
+  }
 }
 
 data "aws_iam_policy_document" "s3_staging" {
+  # Allow CloudFront service with source ARN restriction
   statement {
     principals {
       type        = "Service"
@@ -87,5 +103,19 @@ data "aws_iam_policy_document" "s3_staging" {
       variable = "AWS:SourceArn"
       values   = [var.cloudfront_staging_arn]
     }
+  }
+
+  # Allow CloudFront Origin Access Identity
+  statement {
+    principals {
+      type        = "AWS"
+      identifiers = [var.cloudfront_staging_oai_arn]
+    }
+    actions = [
+      "s3:GetObject"
+    ]
+    resources = [
+      "${aws_s3_bucket.frontend_staging.arn}/*"
+    ]
   }
 }

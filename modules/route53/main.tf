@@ -16,7 +16,7 @@ resource "aws_route53_record" "www_prod" {
 
 resource "aws_route53_record" "staging" {
   zone_id = aws_route53_zone.main.zone_id
-  name    = "staging.${var.domain_name}"
+  name    = "staging-app.${var.domain_name}"
   type    = "A"
 
   alias {

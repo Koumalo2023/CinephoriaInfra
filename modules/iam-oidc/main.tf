@@ -167,6 +167,28 @@ resource "aws_iam_policy" "frontend_s3_policy" {
   })
 }
 
+# Politique pour le frontend - Permissions CloudFront
+resource "aws_iam_policy" "frontend_cloudfront_policy" {
+  name        = "github-actions-cinephoria-frontend-cloudfront"
+  description = "Permissions CloudFront pour GitHub Actions - Frontend Cinephoria"
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Action = [
+          "cloudfront:CreateInvalidation"
+        ]
+        Resource = [
+          "arn:aws:cloudfront::${data.aws_caller_identity.current.account_id}:distribution/${var.cloudfront_distribution_staging}",
+          "arn:aws:cloudfront::${data.aws_caller_identity.current.account_id}:distribution/${var.cloudfront_distribution_production}"
+        ]
+      }
+    ]
+  })
+}
+
 # Attachement des politiques aux rôles
 resource "aws_iam_role_policy_attachment" "backend_ec2_attachment" {
   role       = aws_iam_role.github_actions_backend.name
@@ -176,6 +198,11 @@ resource "aws_iam_role_policy_attachment" "backend_ec2_attachment" {
 resource "aws_iam_role_policy_attachment" "frontend_s3_attachment" {
   role       = aws_iam_role.github_actions_frontend.name
   policy_arn = aws_iam_policy.frontend_s3_policy.arn
+}
+
+resource "aws_iam_role_policy_attachment" "frontend_cloudfront_attachment" {
+  role       = aws_iam_role.github_actions_frontend.name
+  policy_arn = aws_iam_policy.frontend_cloudfront_policy.arn
 }
 
 # Fournisseur OIDC pour GitHub Actions

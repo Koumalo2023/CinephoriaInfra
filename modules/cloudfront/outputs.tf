@@ -27,3 +27,13 @@ output "staging_arn" {
   description = "Staging CloudFront ARN"
   value       = aws_cloudfront_distribution.staging.arn
 }
+
+output "prod_oai_arn" {
+  description = "Production CloudFront Origin Access Identity ARN"
+  value       = aws_cloudfront_origin_access_identity.prod.iam_arn
+}
+
+output "staging_oai_arn" {
+  description = "Staging CloudFront Origin Access Identity ARN"
+  value       = aws_cloudfront_origin_access_identity.staging.iam_arn
+}

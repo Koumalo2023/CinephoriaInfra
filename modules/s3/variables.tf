@@ -14,6 +14,16 @@ variable "cloudfront_staging_arn" {
   type        = string
 }
 
+variable "cloudfront_prod_oai_arn" {
+  description = "ARN of production CloudFront Origin Access Identity"
+  type        = string
+}
+
+variable "cloudfront_staging_oai_arn" {
+  description = "ARN of staging CloudFront Origin Access Identity"
+  type        = string
+}
+
 variable "tags" {
   description = "Tags to apply to resources"
   type        = map(string)

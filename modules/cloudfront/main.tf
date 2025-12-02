@@ -67,7 +67,7 @@ resource "aws_cloudfront_distribution" "staging" {
   enabled             = true
   is_ipv6_enabled     = true
   price_class         = "PriceClass_100"
-  aliases             = ["staging.${var.domain_name}"]
+  aliases             = ["staging-app.${var.domain_name}"]
   default_root_object = "index.html"
 
   origin {
