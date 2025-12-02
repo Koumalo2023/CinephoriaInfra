@@ -48,5 +48,5 @@ variable "tags" {
 variable "github_owner" {
   description = "GitHub owner/organization for OIDC configuration"
   type        = string
-  default     = "simopatrice"  # Remplacez par votre nom d'utilisateur GitHub
+  default     = "Koumalo2023"
 }
