@@ -42,6 +42,39 @@ resource "aws_security_group" "cinephoria" {
   tags = var.tags
 }
 
+# IAM Role for SSM
+resource "aws_iam_role" "cinephoria_ssm_role" {
+  name = "cinephoria-ec2-ssm-role"
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Action = "sts:AssumeRole"
+        Effect = "Allow"
+        Principal = {
+          Service = "ec2.amazonaws.com"
+        }
+      }
+    ]
+  })
+
+  tags = var.tags
+}
+
+resource "aws_iam_role_policy_attachment" "ssm_managed" {
+  role       = aws_iam_role.cinephoria_ssm_role.name
+  policy_arn = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
+}
+
+# Instance Profile
+resource "aws_iam_instance_profile" "cinephoria" {
+  name = "cinephoria-ec2-instance-profile"
+  role = aws_iam_role.cinephoria_ssm_role.name
+
+  tags = var.tags
+}
+
 # EC2 Instance
 resource "aws_instance" "cinephoria" {
   ami                    = data.aws_ami.amazon_linux_2023.id
@@ -49,6 +82,7 @@ resource "aws_instance" "cinephoria" {
   key_name               = var.key_name
   vpc_security_group_ids = [aws_security_group.cinephoria.id]
   subnet_id              = var.subnet_id
+  iam_instance_profile   = aws_iam_instance_profile.cinephoria.name
   user_data              = templatefile("${path.module}/user-data.sh", {
     postgres_password = var.postgres_password
     domain_name       = var.domain_name

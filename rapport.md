@@ -61,7 +61,7 @@ L'analyse a été réalisée par examen des fichiers de configuration, des workf
 - **EC2 :** Instance t3.micro avec Amazon Linux 2023
 - **S3 :** Buckets `cinephoria-frontend-staging` (frontend statique)
 - **CloudFront :** Distribution CDN pour le frontend (optionnelle)
-- **Route53 :** Sous-domaine `staging.cinephoria.eu` et `staging-api.cinephoria.eu`
+- **Route53 :** Sous-domaine `staging-app.cinephoria.eu` et `staging-api.cinephoria.eu`
 - **ACM :** Certificat SSL wildcard pour `*.cinephoria.eu`
 
 **Déploiement CI/CD**

@@ -123,7 +123,8 @@ resource "aws_iam_policy" "backend_ec2_policy" {
         ]
         Resource = [
           "arn:aws:ec2:${var.aws_region}:${data.aws_caller_identity.current.account_id}:instance/${var.ec2_instance_id}",
-          "arn:aws:ssm:${var.aws_region}:${data.aws_caller_identity.current.account_id}:document/*"
+          "arn:aws:ssm:${var.aws_region}:${data.aws_caller_identity.current.account_id}:document/*",
+          "arn:aws:ssm:${var.aws_region}::document/AWS-RunShellScript"
         ]
       }
     ]
